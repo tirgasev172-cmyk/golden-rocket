@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GOLDEN ROCKET</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at bottom, #182d5b, #050817 75%);
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+h1 {
+    color: #ffd45c;
+    margin-top: 30px;
+    letter-spacing: 2px;
+}
+
+#multiplier {
+    font-size: 54px;
+    font-weight: bold;
+    color: #ffd45c;
+    margin: 25px;
+}
+
+#space {
+    height: 350px;
+    position: relative;
+    overflow: hidden;
+}
+
+#rocket {
+    position: absolute;
+    font-size: 65px;
+    bottom: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: drop-shadow(0 0 12px orange);
+    z-index: 2;
+}
+
+#rocket::after {
+    content: "🔥";
+    position: absolute;
+    left: 12px;
+    top: 48px;
+    font-size: 30px;
+    animation: fire 0.15s infinite alternate;
+}
+
+@keyframes fire {
+    from {
+        transform: scale(0.8);
+        opacity: 0.6;
+    }
+    to {
+        transform: scale(1.3);
+        opacity: 1;
+    }
+}
+
+}
+
+button {
+    background: linear-gradient(90deg, #ffb52e, #ffe477);
+    border: none;
+    border-radius: 16px;
+    padding: 17px 35px;
+    font-size: 19px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .5;
+}
+
+#status {
+    margin: 20px;
+    color: #d7e2ff;
+    font-size: 18px;
+}
+
+.star {
+    position: absolute;
+    color: white;
+    animation: twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle {
+    from { opacity: .2; }
+    to { opacity: 1; }
+}
+</style>#history {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+.explosion {
+    position: absolute;
+    font-size: 70px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.explosion.show {
+    animation: boom 0.6s ease-out;
+}
+
+@keyframes boom {
+    0% {
+        transform: translate(-50%, -50%) scale(0.2);
+        opacity: 1;
+    }
+    60% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2);
+        opacity: 0;
+    }
+}
+}
+.history-item {
+    background: #24345c;
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: #ffd45c;
+    font-weight: bold;
+}
+</head>
+
+<body>
+
+<h1>🚀 GOLDEN ROCKET</h1>
+
+<div id="multiplier">1.00x</div>
+
+<div id="space">
+<div id="explosion" class="explosion">💥</div>
+    <div id="rocket">🚀</div>
+</div>
+
+<button id="launch" onclick="launchRocket()">
+    🚀 ЗАПУСТИТЬ
+</button>
+
+<div id="status">Готов к полёту!</div>
+<h3>📊 Последние полёты</h3>
+<div id="history">Пока полётов нет</div>
+
+<script>
+let flying = false;
+let timer = null;
+let history = [];
+
+function addHistory(value) {
+history.unshift(value.toFixed(2));
+history = history.slice(0, 10);
+
+const historyBox = document.getElementById("history");
+historyBox.innerHTML = "";
+
+history.forEach(value => {
+    const item = document.createElement("div");
+    item.className = "history-item";
+    item.textContent = value + "x";
+    historyBox.appendChild(item);
+});
+}
+function launchRocket() {
+    if (flying) return;
+
+    flying = true;
+
+    let height = 25;
+    let multiplier = 1;
+    let r = Math.random();
+    let crashPoint;
+
+    if (r < 0.60) {
+    crashPoint = 1 + Math.random() * 1;
+} else if (r < 0.85) {
+    crashPoint = 2 + Math.random() * 3;
+} else if (r < 0.96) {
+    crashPoint = 5 + Math.random() * 15;
+} else if (r < 0.995) {
+    crashPoint = 20 + Math.random() * 80;
+} else {
+    crashPoint = 100 + Math.random() * 130;
+}
+    const rocket = document.getElementById("rocket");
+    const display = document.getElementById("multiplier");
+    const status = document.getElementById("status");
+    const button = document.getElementById("launch");
+
+    button.disabled = true;
+    rocket.style.bottom = "25px";
+    display.textContent = "1.00x";
+    status.textContent = "🚀 Ракета взлетает!";
+
+    timer = setInterval(() => {
+        multiplier += 0.01 + multiplier * 0.012;
+        height = Math.min(260, height + 2);
+
+        display.textContent = multiplier.toFixed(2) + "x";
+        rocket.style.bottom = height + "px";
+
+        if (multiplier >= crashPoint) {
+            clearInterval(timer);
+            status.textContent = "💥 Ракета падает!";
+            const explosion = document.getElementById("explosion");
+
+            explosion.classList.remove("show");
+            void explosion.offsetWidth;
+            explosion.classList.add("show");
+            addHistory(multiplier);
+            let fall = setInterval(() => {
+                height -= 9;
+                rocket.style.bottom = height + "px";
+
+                if (height <= 25) {
+                    clearInterval(fall);
+                    rocket.style.bottom = "25px";
+                    flying = false;
+                    button.disabled = false;
+                    status.textContent =
+                        "🏁 Полёт завершён на " +
+                        multiplier.toFixed(2) + "x";
+                }
+            }, 40);
+        }
+    }, 100);
+}
+
+for (let i = 0; i < 45; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+    star.textContent = "✦";
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.animationDelay = Math.random() * 2 + "s";
+    document.body.appendChild(star);
+}
+</script>
+
+</body>
+</html>
